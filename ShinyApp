@@ -1,3 +1,8 @@
+# steps to build ShinyApp
+1.Add inputs(UI)
+2.Add outputs(UI/server)
+3.Update layout(UI)
+4.Update layout (Server)
 ui <- fluidPage(
   titlePanel("Most Popular Names"),
   sidebarLayout(
@@ -15,6 +20,35 @@ server <- function(input, output, session) {
     top_names_by_sex_year <- get_top_names(input$year, input$sex) 
     ggplot(top_names_by_sex_year, aes(x = name, y = prop)) +
       geom_col()
+  })
+}
+shinyApp(ui = ui, server = server)
+
+
+ui <- fluidPage(
+  titlePanel("Most Popular Names"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput('sex', 'Select Sex', c("M", "F")),
+      sliderInput('year', 'Select Year', 1880, 2013, 1900)
+    ),
+    mainPanel(
+      tabsetPanel(
+        tabPanel('Plot', plotOutput('plot')),
+        tabPanel('Table', tableOutput('table'))
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  output$plot <- renderPlot({
+    d <- get_top_names(input$year, input$sex) 
+    qplot(name, prop, data = d, geom = 'col')
+  })
+  
+  output$table <- renderTable({
+    get_top_names(input$year, input$sex) 
   })
 }
 shinyApp(ui = ui, server = server)
